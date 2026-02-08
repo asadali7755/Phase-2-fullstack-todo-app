@@ -4,7 +4,7 @@ import React from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  error?: Error;
+  error: Error | null;
 }
 
 class ErrorBoundary extends React.Component<
@@ -13,7 +13,7 @@ class ErrorBoundary extends React.Component<
 > {
   constructor(props: { children: React.ReactNode; fallback?: React.ComponentType<{ error: Error | null }> }) {
     super(props);
-    this.state = { hasError: false, error: undefined };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
