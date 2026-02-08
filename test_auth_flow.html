@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Authentication Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Authentication Flow</h1>
+        
+        <div class="section">
+            <h3>Step 1: Register User</h3>
+            <input type="email" id="regEmail" placeholder="Email" value="testuser@example.com">
+            <input type="password" id="regPassword" placeholder="Password" value="password123">
+            <button onclick="register()">Register</button>
+            <div id="regResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 2: Login User</h3>
+            <input type="email" id="loginEmail" placeholder="Email" value="testuser@example.com">
+            <input type="password" id="loginPassword" placeholder="Password" value="password123">
+            <button onclick="login()">Login</button>
+            <div id="loginResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 3: Get User Info</h3>
+            <button onclick="getUserInfo()">Get User Info</button>
+            <div id="userInfoResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 4: Logout</h3>
+            <button onclick="logout()">Logout</button>
+            <div id="logoutResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        const BACKEND_URL = 'http://localhost:8000';
+        
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('regResult').innerHTML = 
+                        `<div class="success">Registration successful! User ID: ${result.id}</div>`;
+                } else {
+                    document.getElementById('regResult').innerHTML = 
+                        `<div class="error">Registration failed: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('regResult').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    authToken = result.access_token;
+                    document.getElementById('loginResult').innerHTML = 
+                        `<div class="success">Login successful! Token received.</div>`;
+                } else {
+                    document.getElementById('loginResult').innerHTML = 
+                        `<div class="error">Login failed: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function getUserInfo() {
+            if (!authToken) {
+                document.getElementById('userInfoResult').innerHTML = 
+                    `<div class="error">No authentication token. Please login first.</div>`;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('userInfoResult').innerHTML = 
+                        `<div class="success">User info retrieved: ${result.email}</div>`;
+                } else {
+                    document.getElementById('userInfoResult').innerHTML = 
+                        `<div class="error">Failed to get user info: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('userInfoResult').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken || ''}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    authToken = null;
+                    document.getElementById('logoutResult').innerHTML = 
+                        `<div class="success">Logout successful!</div>`;
+                } else {
+                    document.getElementById('logoutResult').innerHTML = 
+                        `<div class="error">Logout failed: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('logoutResult').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

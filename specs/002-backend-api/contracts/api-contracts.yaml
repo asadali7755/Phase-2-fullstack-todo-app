@@ -1,0 +1,145 @@
+# API Contracts: Backend API & Database Layer for Todo Full-Stack Web Application
+
+## Base URL
+`https://api.todoapp.com/v1` (or `http://localhost:8000/v1` for development)
+
+## Authentication
+All endpoints require JWT token in Authorization header:
+`Authorization: Bearer <jwt_token>`
+
+## Common Responses
+- `401 Unauthorized`: Invalid or missing JWT token
+- `403 Forbidden`: User attempting to access another user's resources
+- `404 Not Found`: Resource does not exist
+- `422 Unprocessable Entity`: Invalid request data
+- `500 Internal Server Error`: Server error
+
+## Endpoints
+
+### Create Todo
+- **Method**: POST
+- **Path**: `/todos`
+- **Description**: Creates a new todo for the authenticated user
+- **Request Body**:
+  ```json
+  {
+    "title": "String (required, 1-255 chars)",
+    "description": "String (optional, max 1000 chars)"
+  }
+  ```
+- **Success Response**: `201 Created`
+  ```json
+  {
+    "id": "UUID",
+    "title": "String",
+    "description": "String or null",
+    "completed": false,
+    "user_id": "UUID",
+    "created_at": "ISO datetime string",
+    "updated_at": "ISO datetime string"
+  }
+  ```
+- **Error Responses**: 401, 422, 500
+
+### Get Todos (List)
+- **Method**: GET
+- **Path**: `/todos`
+- **Description**: Gets all todos for the authenticated user
+- **Query Parameters**:
+  - `limit`: Integer (default: 50, max: 100)
+  - `offset`: Integer (default: 0)
+  - `completed`: Boolean (optional, filter by completion status)
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "todos": [
+      {
+        "id": "UUID",
+        "title": "String",
+        "description": "String or null",
+        "completed": "Boolean",
+        "user_id": "UUID",
+        "created_at": "ISO datetime string",
+        "updated_at": "ISO datetime string"
+      }
+    ],
+    "total": "Integer",
+    "offset": "Integer",
+    "limit": "Integer"
+  }
+  ```
+- **Error Responses**: 401, 500
+
+### Get Todo by ID
+- **Method**: GET
+- **Path**: `/todos/{id}`
+- **Description**: Gets a specific todo by ID for the authenticated user
+- **Path Parameter**: `id` (UUID)
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "id": "UUID",
+    "title": "String",
+    "description": "String or null",
+    "completed": "Boolean",
+    "user_id": "UUID",
+    "created_at": "ISO datetime string",
+    "updated_at": "ISO datetime string"
+  }
+  ```
+- **Error Responses**: 401, 403, 404, 500
+
+### Update Todo
+- **Method**: PUT
+- **Path**: `/todos/{id}`
+- **Description**: Updates a specific todo by ID for the authenticated user
+- **Path Parameter**: `id` (UUID)
+- **Request Body**:
+  ```json
+  {
+    "title": "String (optional)",
+    "description": "String (optional)",
+    "completed": "Boolean (optional)"
+  }
+  ```
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "id": "UUID",
+    "title": "String",
+    "description": "String or null",
+    "completed": "Boolean",
+    "user_id": "UUID",
+    "created_at": "ISO datetime string",
+    "updated_at": "ISO datetime string"
+  }
+  ```
+- **Error Responses**: 401, 403, 404, 422, 500
+
+### Delete Todo
+- **Method**: DELETE
+- **Path**: `/todos/{id}`
+- **Description**: Deletes a specific todo by ID for the authenticated user
+- **Path Parameter**: `id` (UUID)
+- **Success Response**: `204 No Content`
+- **Error Responses**: 401, 403, 404, 500
+
+### Toggle Todo Completion
+- **Method**: PATCH
+- **Path**: `/todos/{id}/complete`
+- **Description**: Toggles the completion status of a specific todo
+- **Path Parameter**: `id` (UUID)
+- **Request Body**: Empty
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "id": "UUID",
+    "title": "String",
+    "description": "String or null",
+    "completed": "Boolean",
+    "user_id": "UUID",
+    "created_at": "ISO datetime string",
+    "updated_at": "ISO datetime string"
+  }
+  ```
+- **Error Responses**: 401, 403, 404, 500
