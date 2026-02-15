@@ -6,6 +6,7 @@ const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -34,7 +35,16 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       // Server responded with error status
-      const { status, data } = error.response;
+      const { status, data, config } = error.response;
+
+      // Log more detailed information for debugging
+      console.error('API Error Details:', {
+        url: config?.url,
+        method: config?.method,
+        status,
+        data,
+        headers: config?.headers
+      });
 
       switch (status) {
         case 401:
